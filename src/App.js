@@ -29,6 +29,23 @@ const initialState = {
   likedTweets: [2],
 };
 
+// setState updater
+function setTweetLiked(tweetId, newLiked) {
+  return state => {
+    return {
+      tweets: state.tweets.map(
+        tweet =>
+          tweet.id === tweetId
+            ? {...tweet, likes: tweet.likes + (!newLiked ? -1 : 1)}
+            : tweet
+      ),
+      likedTweets: !newLiked
+        ? state.likedTweets.filter(id => id !== tweetId)
+        : [...state.likedTweets, tweetId],
+    };
+  };
+}
+
 class App extends React.Component {
   state = initialState;
 
@@ -36,21 +53,10 @@ class App extends React.Component {
     console.log(`Clicked like: ${tweetId}`);
 
     console.log(`Update state: ${tweetId}`);
-    this.setState(state => {
-      const isLiked = state.likedTweets.includes(tweetId);
 
-      return {
-        tweets: state.tweets.map(
-          tweet =>
-            tweet.id === tweetId
-              ? {...tweet, likes: tweet.likes + (isLiked ? -1 : 1)}
-              : tweet
-        ),
-        likedTweets: isLiked
-          ? state.likedTweets.filter(id => id !== tweetId)
-          : [...state.likedTweets, tweetId],
-      };
-    });
+    const isLiked = this.state.likedTweets.includes(tweetId);
+    this.setState(setTweetLiked(tweetId, !isLiked));
+
     likeTweetRequest(tweetId, true)
       .then(() => {
         console.log(`then: ${tweetId}`);
