@@ -23,28 +23,11 @@ const initialState = {
   tweets: [0, 3, 98, 0, 0].map((likes, i) => ({
     id: i + 1,
     likes,
-    username: `${shouldFail(i + 1) ? 'Fail' : 'Cool'}Cats${i + 1}`,
+    username: `${shouldFail(i + 1) ? 'Fail' : 'Cool'}Cat${i + 1}`,
     content: `Some really great content here (${i + 1})...`,
   })),
   likedTweets: [2],
 };
-
-// setState updater
-function setTweetLiked(tweetId, newLiked) {
-  return state => {
-    return {
-      tweets: state.tweets.map(
-        tweet =>
-          tweet.id === tweetId
-            ? {...tweet, likes: tweet.likes + (!newLiked ? -1 : 1)}
-            : tweet
-      ),
-      likedTweets: !newLiked
-        ? state.likedTweets.filter(id => id !== tweetId)
-        : [...state.likedTweets, tweetId],
-    };
-  };
-}
 
 class App extends React.Component {
   state = initialState;
@@ -54,15 +37,28 @@ class App extends React.Component {
 
     console.log(`Update state: ${tweetId}`);
 
-    const isLiked = this.state.likedTweets.includes(tweetId);
-    this.setState(setTweetLiked(tweetId, !isLiked));
+    this.setState(state => {
+      const isLiked = this.state.likedTweets.includes(tweetId);
+
+      return {
+        tweets: state.tweets.map(
+          tweet =>
+            tweet.id === tweetId
+              ? {...tweet, likes: tweet.likes + (isLiked ? -1 : 1)}
+              : tweet
+        ),
+        likedTweets: isLiked
+          ? state.likedTweets.filter(id => id !== tweetId)
+          : [...state.likedTweets, tweetId],
+      };
+    });
 
     likeTweetRequest(tweetId, true)
       .then(() => {
         console.log(`then: ${tweetId}`);
       })
       .catch(() => {
-        console.log(`catch: ${tweetId}`);
+        console.error(`catch: ${tweetId}`);
       });
   };
 
