@@ -49,13 +49,21 @@ function setTweetLiked(tweetId, newLiked) {
 class App extends React.Component {
   state = initialState;
 
+  likeRequestPending = false;
+  
   onClickLike = tweetId => {
     console.log(`Clicked like: ${tweetId}`);
 
+    // Prevent multiple/conflicting invocations of onClickLike
+    if (this.likeRequestPending) {
+      console.log('Request already pending! Do nothing.');
+      return; 
+    }
+    
     console.log(`Update state: ${tweetId}`);
-
     const isLiked = this.state.likedTweets.includes(tweetId);
     this.setState(setTweetLiked(tweetId, !isLiked));
+    this.likeRequestPending = true;
 
     likeTweetRequest(tweetId, true)
       .then(() => {
@@ -64,6 +72,9 @@ class App extends React.Component {
       .catch(() => {
         console.log(`catch: ${tweetId}`);
         this.setState(setTweetLiked(tweetId, isLiked));
+      })
+      .then(() => {
+        this.likeRequestPending = false;
       });
   };
 
