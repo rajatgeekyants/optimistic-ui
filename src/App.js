@@ -39,6 +39,23 @@ export default class App extends Component {
       );
   };
 
+  deleteItemOptimistic = id => {
+    const originalItems = this.state.items;
+
+    // 1) Assume success. Immediately update state.
+    this.setState(state => ({
+      items: state.items.filter(item => item.id !== id),
+    }));
+
+    // 2b) If the request failed revert state and display error.
+    deleteItemRequest(id).catch(() =>
+      this.setState({
+        items: originalItems,
+        error: `Request failed for item ${id}`,
+      })
+    );
+  };
+
   render() {
     const {items, loading, error} = this.state;
     return (
@@ -48,7 +65,7 @@ export default class App extends Component {
           {items.map(item => (
             <li key={item.id}>
               {item.title}{' '}
-              <button onClick={() => this.deleteItemLoading(item.id)}>
+              <button onClick={() => this.deleteItemOptimistic(item.id)}>
                 Delete
               </button>
             </li>
